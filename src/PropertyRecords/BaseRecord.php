@@ -2,7 +2,6 @@
 
 namespace AltiumParser\PropertyRecords;
 
-use AltiumParser\DataTypes;
 use AltiumParser\RawRecord;
 
 class BaseRecord
@@ -41,9 +40,9 @@ class BaseRecord
     const RECORD_TEMPLATE = 39;
     const RECORD_PARAMETER = 41;
     const RECORD_WARNING_SIGN = 43;
-    const RECORD_IMPLEMETNATION_LIST = 44;
+    const RECORD_IMPLEMENTATION_LIST = 44;
     const RECORD_IMPLEMENTATION = 45;
-    const RECORD_IMPLEMENTATAION_1 = 46;
+    const RECORD_IMPLEMENTATION_1 = 46;
     const RECORD_IMPLEMENTATION_2 = 47;
     const RECORD_IMPLEMENTATION_3 = 48;
     const RECORD_HYPERLINK = 226;
@@ -83,9 +82,9 @@ class BaseRecord
         self::RECORD_TEMPLATE            => Template::class,
         self::RECORD_PARAMETER           => Parameter::class,
         self::RECORD_WARNING_SIGN        => WarningSign::class,
-        self::RECORD_IMPLEMETNATION_LIST => ImplementationList::class,
+        self::RECORD_IMPLEMENTATION_LIST => ImplementationList::class,
         self::RECORD_IMPLEMENTATION      => Implementation::class,
-        self::RECORD_IMPLEMENTATAION_1   => Implementation1::class,
+        self::RECORD_IMPLEMENTATION_1    => Implementation1::class,
         self::RECORD_IMPLEMENTATION_2    => Implementation2::class,
         self::RECORD_IMPLEMENTATION_3    => Implementation3::class,
         self::RECORD_HYPERLINK           => Hyperlink::class
@@ -129,7 +128,6 @@ class BaseRecord
     protected function __construct(array $properties)
     {
         $this->properties = $properties;
-        // print_r($properties);
     }
 
     public function getProperty($propertyName, $default = null)
@@ -157,7 +155,15 @@ class BaseRecord
 
     public function getColor($propertyName)
     {
-        return DataTypes::toColor($this->getProperty($propertyName));
+        $data = $this->getProperty($propertyName);
+
+        if (!is_numeric($data)) {
+            throw new \InvalidArgumentException("{$data} is not a valid color");
+        }
+
+        $int = (int)$data;
+
+        return sprintf("#%X%X%X", ($int & 0x0000FF), ($int & 0x00FF00) >> 8, ($int & 0xFF0000) >> 16);
     }
 
     public function getInteger($propertyName)

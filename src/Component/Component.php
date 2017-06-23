@@ -22,13 +22,18 @@ class Component
         /** @var RawRecord $record */
         foreach ($records as $i => $record) {
             /** @var BaseRecord $r */
-            if ($record->getType() == \AltiumParser\RawRecord::PROPERTY_RECORD) {
-                $r = \AltiumParser\PropertyRecords\BaseRecord::parseRecord($record);
+            if ($record->getType() == RawRecord::PROPERTY_RECORD) {
+                $r = BaseRecord::parseRecord($record);
             } else {
+                // Special case binary format for RECORD=2
                 $r = new \AltiumParser\PropertyRecords\Pin($record);
             }
 
             switch ($r->getProperty('RECORD')) {
+                case BaseRecord::RECORD_COMPONENT:
+                    $component->componentProperties = $r;
+                    break;
+
                 case BaseRecord::RECORD_PARAMETER:
                     $component->addParameter(new Parameter($r));
                     break;
@@ -63,7 +68,10 @@ class Component
         return $component;
     }
 
-    private $componentProperties = [];
+    /**
+     * @var \AltiumParser\PropertyRecords\Component
+     */
+    private $componentProperties;
 
     /**
      * @var Parameter[]
@@ -94,5 +102,19 @@ class Component
         foreach ($this->parameters as $parameter) {
             yield $parameter->getName() => $parameter;
         }
+    }
+
+    public function getPartCount()
+    {
+        return count($this->subparts);
+    }
+
+    public function getSubPart($id)
+    {
+        if (isset($this->subparts[ $id ])) {
+            return $this->subparts[$id];
+        }
+
+        throw new \InvalidArgumentException("Part '{$id}' not found");
     }
 }

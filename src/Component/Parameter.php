@@ -31,6 +31,6 @@ class Parameter
 
     public function __toString()
     {
-        return $this->getText();
+        return (string)$this->getText();
     }
 }

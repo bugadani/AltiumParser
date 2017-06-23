@@ -56,7 +56,7 @@ class Pin extends BaseRecord
          * Byte 10: inside symbol
          * Byte 11: outside symbol
          * Byte 12: Description (string)
-         * Byte 13: formaltype?
+         * Byte 13: formaltype? in that case, fixed 1
          * Byte 14: pin electric type
          * byte 15: Pin Conglomerate: 0, Locked, ?, Designator, Name, Hide, Orientation
          * Byte 16: Pin length
@@ -67,6 +67,8 @@ class Pin extends BaseRecord
          * Byte 25: 0
          * Byte 26: Name (stirng)
          * Byte 27: Designator (string)
+         *
+         * More data stored in accompanying files
          */
         $descriptionLength = ord($recordString[ self::OFFSET_DESCRIPTION_LENGTH ]);
         $description       = substr($recordString, self::OFFSET_DESCRIPTION, $descriptionLength);

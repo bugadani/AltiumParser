@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: bugad
- * Date: 2017. 06. 23.
- * Time: 15:08
- */
 
 namespace AltiumParser\Component;
-
 
 use AltiumParser\PropertyRecords\BaseRecord;
 
@@ -16,7 +9,7 @@ class DrawingPrimitive
     /**
      * @var BaseRecord
      */
-    private $rrecord;
+    private $record;
 
     /**
      * DrawingPrimitive constructor.
@@ -24,6 +17,6 @@ class DrawingPrimitive
      */
     public function __construct(BaseRecord $r)
     {
-        $this->rrecord = $r;
+        $this->record = $r;
     }
 }
