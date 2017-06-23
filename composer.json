@@ -1,0 +1,20 @@
+{
+  "name": "bugadani/AltiumParser",
+  "description": "Parser library for Altium Designer file formats",
+  "minimum-stability": "dev",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Dániel Buga",
+      "email": "bugadani@gmail.com"
+    }
+  ],
+  "require": {
+    "bugadani/ole_reader": "dev-master"
+  },
+  "autoload": {
+    "psr-4": {
+      "AltiumParser\\": "src/"
+    }
+  }
+}
