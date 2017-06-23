@@ -5,6 +5,14 @@ namespace AltiumParser\PropertyRecords;
 use AltiumParser\RawRecord;
 use OLEReader\Utils;
 
+/**
+ * Base class that holds most of the pin information. This one is different from other record classes because in some
+ * versions of Altium Designer, the pin record is stored in a binary format.
+ *
+ * @todo maybe handle the case where RECORD=2 is in plaintext?
+ *
+ * @package AltiumParser\PropertyRecords
+ */
 class Pin extends BaseRecord
 {
     const OFFSET_OWNER_PART_ID = 5;

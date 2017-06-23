@@ -2,6 +2,11 @@
 
 namespace AltiumParser\Component;
 
+/**
+ * Component parameter class.
+ *
+ * @package AltiumParser\Component
+ */
 class Parameter
 {
     /**

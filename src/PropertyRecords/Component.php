@@ -2,6 +2,11 @@
 
 namespace AltiumParser\PropertyRecords;
 
+/**
+ * Low level component class, holds data of RECORD=1
+ *
+ * @package AltiumParser\PropertyRecords
+ */
 class Component extends BaseRecord
 {
     public function getLibReference()

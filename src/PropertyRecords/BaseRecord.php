@@ -4,6 +4,11 @@ namespace AltiumParser\PropertyRecords;
 
 use AltiumParser\RawRecord;
 
+/**
+ * Base class for all low-level record classes
+ *
+ * @package AltiumParser\PropertyRecords
+ */
 class BaseRecord
 {
     const RECORD_HEADER = 0;

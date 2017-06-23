@@ -2,6 +2,11 @@
 
 namespace AltiumParser\Component;
 
+/**
+ * Class containing Pin information. Belongs to a subpart
+ *
+ * @package AltiumParser\Component
+ */
 class Pin
 {
     /**

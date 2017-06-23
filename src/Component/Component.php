@@ -5,18 +5,23 @@ namespace AltiumParser\Component;
 use AltiumParser\PropertyRecords\BaseRecord;
 use AltiumParser\RawRecord;
 
+/**
+ * Higher level Component class
+ *
+ * @package AltiumParser\Component
+ */
 class Component
 {
     public static function create(array $records)
     {
         $component = new Component();
 
-        $getSubpart = function ($partid) use ($component) {
-            if (!isset($component->subparts[ $partid ])) {
-                $component->subparts[ $partid ] = new Subpart();
+        $getSubpart = function ($partId) use ($component) {
+            if (!isset($component->subparts[ $partId ])) {
+                $component->subparts[ $partId ] = new Subpart();
             }
 
-            return $component->subparts[ $partid ];
+            return $component->subparts[ $partId ];
         };
 
         /** @var RawRecord $record */
