@@ -101,28 +101,37 @@ class BaseRecord
      */
     public static function parseRecord(RawRecord $record)
     {
-        if ($record->getType() != RawRecord::PROPERTY_RECORD) {
-            throw new \InvalidArgumentException("Record at offset {$record->getOffset()} is not a valid property record");
-        }
+        $recordData = $record->getData();
+        if ($record->getType() == RawRecord::PROPERTY_RECORD) {
+            preg_match_all('/(?:%UTF8%(?<Utf8Name>[A-Z0-9]+?)=(?<Utf8Value>.*?)[|]{3})|(?:(?<AsciiName>[A-Z0-9]+)=(?<AsciiValue>[^|]+)(?:[\|]|$))/U', $recordData, $matches, PREG_SET_ORDER);
 
-        preg_match_all('/(?:%UTF8%(?<Utf8Name>[A-Z0-9]+?)=(?<Utf8Value>.*?)[|]{3})|(?:(?<AsciiName>[A-Z0-9]+)=(?<AsciiValue>[^|]+)(?:[\|]|$))/U', $record->getData(), $matches, PREG_SET_ORDER);
-
-        $properties = [];
-        foreach ($matches as $match) {
-            if (!empty($match['Utf8Name'])) {
-                $properties[ $match['Utf8Name'] ] = $match['Utf8Value'];
-            } else {
-                $properties[ $match['AsciiName'] ] = $match['AsciiValue'];
+            $properties = [];
+            foreach ($matches as $match) {
+                if (!empty($match['Utf8Name'])) {
+                    $properties[ $match['Utf8Name'] ] = $match['Utf8Value'];
+                } else {
+                    $properties[ $match['AsciiName'] ] = $match['AsciiValue'];
+                }
             }
-        }
-        if (!isset($properties['RECORD'])) {
-            $properties['RECORD'] = 0;
-        }
+            if (!isset($properties['RECORD'])) {
+                $properties['RECORD'] = 0;
+            }
 
-        $recordId = trim($properties['RECORD']);
+            $recordId = trim($properties['RECORD']);
 
-        if (!isset(self::$records[ $recordId ])) {
-            throw new \UnexpectedValueException("Invalid record id: RECORD={$recordId}");
+            if (!isset(self::$records[ $recordId ])) {
+                throw new \UnexpectedValueException("Invalid record id: RECORD={$recordId}");
+            }
+
+        } else {
+            $recordId = ord($recordData[0]);
+            if (!isset(self::$records[ $recordId ])) {
+                throw new \UnexpectedValueException("Invalid record id: RECORD={$recordId}");
+            }
+            if (!method_exists(self::$records[ $recordId ], 'parseRawRecord')) {
+                throw new \InvalidArgumentException("Record at offset {$record->getOffset()} is not a valid property record");
+            }
+            $properties = Pin::parseRawRecord($record);
         }
 
         return new self::$records[ $recordId ] ($properties);
@@ -139,7 +148,8 @@ class BaseRecord
     {
         if (!isset($this->properties[ $propertyName ])) {
             if ($default === null) {
-                throw new \InvalidArgumentException("Unknown property: {$propertyName}");
+                $properties = implode(", ", array_keys($this->properties));
+                throw new \InvalidArgumentException("Unknown property: {$propertyName}. Defined properties are: {$properties}");
             }
 
             return $default;

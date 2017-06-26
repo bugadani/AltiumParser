@@ -45,7 +45,7 @@ class Pin extends BaseRecord
     const PIN_ELECTRIC_TYPE_OPEN_EMITTER = 6;
     const PIN_ELECTRIC_TYPE_POWER = 7;
 
-    public function __construct(RawRecord $record)
+    public static function parseRawRecord(RawRecord $record)
     {
         $recordString = $record->getData();
 
@@ -87,7 +87,7 @@ class Pin extends BaseRecord
         $designatorLength = ord($recordString[ self::OFFSET_DESIGNATOR_LENGTH + $nameLength + $descriptionLength ]);
         $designator       = substr($recordString, self::OFFSET_DESIGNATOR + $nameLength + $descriptionLength, $designatorLength);
 
-        $parameters = [
+        return [
             'RECORD'           => 2,
             'OWNERPARTID'      => ord($recordString[ self::OFFSET_OWNER_PART_ID ]),
             'SYMBOL_INNEREDGE' => ord($recordString[ self::OFFSET_INSIDE_EDGE_SYMBOL ]),
@@ -103,7 +103,5 @@ class Pin extends BaseRecord
             'NAME'             => $name,
             'DESIGNATOR'       => $designator,
         ];
-
-        parent::__construct($parameters);
     }
 }

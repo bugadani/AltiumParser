@@ -31,7 +31,7 @@ class Parameter
 
     public function getText()
     {
-        return $this->record->getProperty('TEXT');
+        return $this->record->getProperty('TEXT', '');
     }
 
     public function __toString()

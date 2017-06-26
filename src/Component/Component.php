@@ -27,12 +27,7 @@ class Component
         /** @var RawRecord $record */
         foreach ($records as $i => $record) {
             /** @var BaseRecord $r */
-            if ($record->getType() == RawRecord::PROPERTY_RECORD) {
-                $r = BaseRecord::parseRecord($record);
-            } else {
-                // Special case binary format for RECORD=2
-                $r = new \AltiumParser\PropertyRecords\Pin($record);
-            }
+            $r = BaseRecord::parseRecord($record);
 
             switch ($r->getProperty('RECORD')) {
                 case BaseRecord::RECORD_COMPONENT:
