@@ -90,14 +90,14 @@ class Component
 
     public function getParameter($parameterName)
     {
-        if (!isset($parameterName)) {
+        if (!isset($this->parameters[ $parameterName ])) {
             throw new \InvalidArgumentException("Unknown parameter: {$parameterName}");
         }
 
         return $this->parameters[ $parameterName ];
     }
 
-    public function getParameterList()
+    public function listParameters()
     {
         foreach ($this->parameters as $parameter) {
             yield $parameter->getName() => $parameter;
@@ -112,9 +112,14 @@ class Component
     public function getSubPart($id)
     {
         if (isset($this->subparts[ $id ])) {
-            return $this->subparts[$id];
+            return $this->subparts[ $id ];
         }
 
         throw new \InvalidArgumentException("Part '{$id}' not found");
+    }
+
+    public function getLibraryReference()
+    {
+        return $this->componentProperties->getProperty('LIBREFERENCE');
     }
 }
