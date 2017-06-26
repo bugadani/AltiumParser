@@ -181,9 +181,9 @@ class BaseRecord
         return sprintf("#%X%X%X", ($int & 0x0000FF), ($int & 0x00FF00) >> 8, ($int & 0xFF0000) >> 16);
     }
 
-    public function getInteger($propertyName)
+    public function getInteger($propertyName, $default = 0)
     {
-        return (int)$this->getProperty($propertyName, 0);
+        return (int)$this->getProperty($propertyName, $default);
     }
 
     public function getReal($propertyName)

@@ -26,22 +26,20 @@ class Component
 
         /** @var RawRecord $record */
         foreach ($records as $i => $record) {
-            /** @var BaseRecord $r */
-            $r = BaseRecord::parseRecord($record);
 
-            switch ($r->getProperty('RECORD')) {
+            switch ($record->getProperty('RECORD')) {
                 case BaseRecord::RECORD_COMPONENT:
-                    $component->componentProperties = $r;
+                    $component->componentProperties = $record;
                     break;
 
                 case BaseRecord::RECORD_PARAMETER:
-                    $component->addParameter(new Parameter($r));
+                    $component->addParameter(new Parameter($record));
                     break;
 
                 case BaseRecord::RECORD_PIN:
-                    $partId = $r->getInteger('OWNERPARTID');
+                    $partId = $record->getInteger('OWNERPARTID');
 
-                    $getSubpart($partId)->addPin(new Pin($r));
+                    $getSubpart($partId)->addPin(new Pin($record));
                     break;
 
                 case BaseRecord::RECORD_ARC:
@@ -58,9 +56,9 @@ class Component
                 case BaseRecord::RECORD_TEXT_FRAME:
                 case BaseRecord::RECORD_IEEE_SYMBOL:
                 case BaseRecord::RECORD_BEZIER:
-                    $partId = $r->getInteger('OWNERPARTID');
+                    $partId = $record->getInteger('OWNERPARTID');
 
-                    $getSubpart($partId)->addDrawingPrimitive(new DrawingPrimitive($r));
+                    $getSubpart($partId)->addDrawingPrimitive(new DrawingPrimitive($record));
                     break;
             }
         }
@@ -121,5 +119,10 @@ class Component
     public function getLibraryReference()
     {
         return $this->componentProperties->getProperty('LIBREFERENCE');
+    }
+
+    public function getIndexInSheet()
+    {
+        return $this->componentProperties->getProperty('INDEXINSHEET', -1);
     }
 }

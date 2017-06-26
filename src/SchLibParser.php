@@ -21,18 +21,6 @@ class SchLibParser extends LibraryParser
     private $components = [];
 
     /**
-     * @return Component[]
-     */
-    public function listComponents()
-    {
-        if (!$this->fileParsed) {
-            $this->parseFile();
-        }
-
-        return $this->components;
-    }
-
-    /**
      * @param $name
      * @return Component
      */
@@ -79,8 +67,15 @@ class SchLibParser extends LibraryParser
 
             $records = RawRecord::getRecords($ole->getFile("{$component}/Data")->getContents());
 
-            $componentObject    = Component::create($records);
-            $this->components[strtolower($componentObject->getLibraryReference())] = $componentObject;
+            $parsedRecords = [];
+            foreach ($records as $record) {
+                /** @var BaseRecord $r */
+                $parsedRecords[] = BaseRecord::parseRecord($record);
+            }
+
+            $componentObject = Component::create($parsedRecords);
+
+            $this->components[ strtolower($componentObject->getLibraryReference()) ] = $componentObject;
         }
     }
 }
