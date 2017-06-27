@@ -1,5 +1,5 @@
 {
-  "name": "bugadani/AltiumParser",
+  "name": "bugadani/altium-parser",
   "description": "Parser library for Altium Designer file formats",
   "minimum-stability": "dev",
   "license": "MIT",
