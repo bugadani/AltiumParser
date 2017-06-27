@@ -103,13 +103,13 @@ class BaseRecord
     {
         $recordData = $record->getData();
         if ($record->getType() == RawRecord::PROPERTY_RECORD) {
-            preg_match_all('/(?:%UTF8%(?<Utf8Name>[A-Z0-9]+?)=(?<Utf8Value>.*?)[|]{3})|(?:(?<AsciiName>[A-Z0-9]+)=(?<AsciiValue>[^|]+)(?:[\|]|$))/U', $recordData, $matches, PREG_SET_ORDER);
+            preg_match_all('/(?:%UTF8%(?<Utf8Name>[A-Z0-9]+?)=(?<Utf8Value>.*)[|]{3})|(?:(?<AsciiName>[A-Z0-9]+)=(?<AsciiValue>[^|]+)(?:[\|]|$))/U', $recordData, $matches, PREG_SET_ORDER);
 
             $properties = [];
             foreach ($matches as $match) {
                 if (!empty($match['Utf8Name'])) {
                     $properties[ $match['Utf8Name'] ] = $match['Utf8Value'];
-                } else {
+                } else if (!isset($properties[ $match['AsciiName'] ])) {
                     $properties[ $match['AsciiName'] ] = $match['AsciiValue'];
                 }
             }
