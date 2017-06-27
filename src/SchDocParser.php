@@ -3,9 +3,8 @@
 namespace AltiumParser;
 
 use AltiumParser\Component\Component;
+use AltiumParser\Component\Parameter;
 use AltiumParser\Component\Pin;
-use AltiumParser\PropertyRecords\BaseRecord;
-use AltiumParser\PropertyRecords\Parameter;
 
 class SchDocParser extends LibraryParser
 {
@@ -26,6 +25,11 @@ class SchDocParser extends LibraryParser
      * @var Component[][]
      */
     private $componentsGrouped = [];
+
+    /**
+     * @var PropertyRecords\Sheet
+     */
+    private $sheetProperties;
 
     /**
      * @return Component[][]
@@ -68,7 +72,7 @@ class SchDocParser extends LibraryParser
             throw new \UnexpectedValueException('File is not a valid schematic library');
         }
 
-        $headerRecord = BaseRecord::parseRecord($records[0]);
+        $headerRecord = PropertyRecords\BaseRecord::parseRecord($records[0]);
         if ($headerRecord->getProperty('HEADER') != self::SCHLIB_HEADER) {
             throw new \UnexpectedValueException('File is not a valid schematic library');
         }
@@ -90,7 +94,7 @@ class SchDocParser extends LibraryParser
         };
 
         for ($i = 1; $i < count($records); $i++) {
-            $r     = BaseRecord::parseRecord($records[ $i ]);
+            $r     = PropertyRecords\BaseRecord::parseRecord($records[ $i ]);
             $owner = $r->getInteger('OWNERINDEX', -1);
 
             $objectOwners[ $i - 1 ] = $owner;
@@ -108,7 +112,9 @@ class SchDocParser extends LibraryParser
 
         // Parse the tree
         foreach ($objects['children'] as $node) {
-            if ($node['record'] instanceof \AltiumParser\PropertyRecords\Component) {
+            if ($node['record'] instanceof PropertyRecords\Sheet) {
+                $this->sheetProperties = $node['record'];
+            } else if ($node['record'] instanceof PropertyRecords\Component) {
                 $component          = $this->parseComponent($node);
                 $this->components[] = $component;
 
@@ -118,6 +124,16 @@ class SchDocParser extends LibraryParser
                 } else {
                     $this->componentsGrouped[ $libraryReference ][] = $component;
                 }
+            } else if ($node['record'] instanceof PropertyRecords\Wire) {
+            } else if ($node['record'] instanceof PropertyRecords\Junction) {
+            } else if ($node['record'] instanceof PropertyRecords\NetLabel) {
+            } else if ($node['record'] instanceof PropertyRecords\Port) {
+            } else if ($node['record'] instanceof PropertyRecords\PowerPort) {
+            } else if ($node['record'] instanceof PropertyRecords\Parameter) {
+            } else if ($node['record'] instanceof PropertyRecords\NoERC) {
+            } else if ($node['record'] instanceof PropertyRecords\Label) {
+            } else {
+                throw new \UnexpectedValueException("Unexpected record: {$node['record']->getProperty('RECORD')}");
             }
         }
     }
@@ -145,14 +161,15 @@ class SchDocParser extends LibraryParser
             if ($child['record'] instanceof PropertyRecords\Pin) {
                 $pin = $this->parsePin($child);
 
-                if (!in_array($pin->getSubpartId(), $subpartsDefined)) {
-                    $component->createSubpart($pin->getSubpartId());
-                    $subpartsDefined[] = $pin->getSubpartId();
+                $id = $pin->getSubpartId();
+                if (!in_array($id, $subpartsDefined)) {
+                    $component->createSubpart($id);
+                    $subpartsDefined[] = $id;
                 }
 
-                $component->getSubPart($pin->getSubpartId())->addPin($pin);
+                $component->getSubPart($id)->addPin($pin);
 
-            } else if ($child['record'] instanceof Parameter) {
+            } else if ($child['record'] instanceof PropertyRecords\Parameter) {
                 $param = $this->parseComponentParameter($child);
                 $component->addParameter($param);
             }
@@ -176,6 +193,6 @@ class SchDocParser extends LibraryParser
 
     private function parseComponentParameter($node)
     {
-        return new \AltiumParser\Component\Parameter($node['record']);
+        return new Parameter($node['record']);
     }
 }
