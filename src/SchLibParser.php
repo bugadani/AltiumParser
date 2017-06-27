@@ -38,6 +38,28 @@ class SchLibParser extends LibraryParser
         return $this->components[ $nameLower ];
     }
 
+    public function listComponentNames()
+    {
+        if (!$this->fileParsed) {
+            $this->parseFile();
+        }
+
+        return array_map(function (Component $component) {
+            return $component->getLibraryReference();
+        }, $this->components);
+    }
+
+    public function listComponents()
+    {
+        if (!$this->fileParsed) {
+            $this->parseFile();
+        }
+
+        foreach ($this->components as $component) {
+            yield $component;
+        }
+    }
+
     private function parseFile()
     {
         $this->fileParsed = true;
