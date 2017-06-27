@@ -14,7 +14,7 @@ class Component
 {
     public static function create(array $records)
     {
-        $component = new Component();
+        $component = new Component(null);
 
         $getSubpart = function ($partId) use ($component) {
             if (!isset($component->subparts[ $partId ])) {
@@ -81,7 +81,17 @@ class Component
      */
     private $subparts = [];
 
-    private function addParameter(Parameter $param)
+    public function __construct(\AltiumParser\PropertyRecords\Component $properties)
+    {
+        $this->componentProperties = $properties;
+    }
+
+    public function createSubpart($id)
+    {
+        $this->subparts[$id] = new Subpart();
+    }
+
+    public function addParameter(Parameter $param)
     {
         $this->parameters[ $param->getName() ] = $param;
     }

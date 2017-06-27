@@ -18,4 +18,9 @@ class Pin
     {
         $this->record = $record;
     }
+
+    public function getSubpartId()
+    {
+        return $this->record->getInteger('OWNERPARTID');
+    }
 }

@@ -3,7 +3,9 @@
 namespace AltiumParser;
 
 use AltiumParser\Component\Component;
+use AltiumParser\Component\Pin;
 use AltiumParser\PropertyRecords\BaseRecord;
+use AltiumParser\PropertyRecords\Parameter;
 
 class SchDocParser extends LibraryParser
 {
@@ -70,33 +72,110 @@ class SchDocParser extends LibraryParser
         if ($headerRecord->getProperty('HEADER') != self::SCHLIB_HEADER) {
             throw new \UnexpectedValueException('File is not a valid schematic library');
         }
-        $objects    = [];
-        $components = [];
+
+        // Create a tree from the records
+        $objects      = [];
+        $objectOwners = [];
+
+        $getOwners = function ($ownerId) use (&$objectOwners) {
+            $chain = [];
+
+            $currentOwner = $ownerId;
+            while ($currentOwner !== -1) {
+                array_unshift($chain, $currentOwner);
+                $currentOwner = $objectOwners[ $currentOwner ];
+            }
+
+            return $chain;
+        };
+
         for ($i = 1; $i < count($records); $i++) {
             $r     = BaseRecord::parseRecord($records[ $i ]);
-            $index = $r->getInteger('INDEXINSHEET', -1);
+            $owner = $r->getInteger('OWNERINDEX', -1);
 
-            if (isset($objects[ $index ])) {
-                $objects[ $index ][] = $r;
-            } else if (isset($components[ $index ])) {
-                $components[ $index ][] = $r;
-            } else if ($r instanceof PropertyRecords\Component) {
-                $components[ $index ] = [$r];
-            } else {
-                $objects[ $index ] = [$r];
+            $objectOwners[ $i - 1 ] = $owner;
+            $ownerChain             = $getOwners($owner);
+
+            $object =& $objects;
+            foreach ($ownerChain as $id) {
+                $object =& $object['children'][ $id ];
+            }
+            $object['children'][ $i - 1 ] = [
+                'record'   => $r,
+                'children' => []
+            ];
+        }
+
+        // Parse the tree
+        foreach ($objects['children'] as $node) {
+            if ($node['record'] instanceof \AltiumParser\PropertyRecords\Component) {
+                $component          = $this->parseComponent($node);
+                $this->components[] = $component;
+
+                $libraryReference = strtolower($component->getLibraryReference());
+                if (!isset($this->componentsGrouped[ $libraryReference ])) {
+                    $this->componentsGrouped[ $libraryReference ] = [$component];
+                } else {
+                    $this->componentsGrouped[ $libraryReference ][] = $component;
+                }
+            }
+        }
+    }
+
+    public function getComponentsByLibRef($libRef)
+    {
+        if (!$this->fileParsed) {
+            $this->parseFile();
+        }
+
+        $libraryReference = strtolower($libRef);
+
+        if (!isset($this->componentsGrouped[ $libraryReference ])) {
+            throw new \OutOfBoundsException("Component '{$libRef}' not found in sheet");
+        } else {
+            return $this->componentsGrouped[ $libraryReference ];
+        }
+    }
+
+    private function parseComponent($node)
+    {
+        $component       = new Component($node['record']);
+        $subpartsDefined = [];
+        foreach ($node['children'] as $child) {
+            if ($child['record'] instanceof PropertyRecords\Pin) {
+                $pin = $this->parsePin($child);
+
+                if (!in_array($pin->getSubpartId(), $subpartsDefined)) {
+                    $component->createSubpart($pin->getSubpartId());
+                    $subpartsDefined[] = $pin->getSubpartId();
+                }
+
+                $component->getSubPart($pin->getSubpartId())->addPin($pin);
+
+            } else if ($child['record'] instanceof Parameter) {
+                $param = $this->parseComponentParameter($child);
+                $component->addParameter($param);
             }
         }
 
-        foreach ($components as $c) {
-            $component          = Component::create($c);
-            $this->components[] = $component;
+        return $component;
+    }
 
-            $libraryReference = $component->getLibraryReference();
-            if (!isset($this->componentsGrouped[ $libraryReference ])) {
-                $this->componentsGrouped[ $libraryReference ] = [$component];
-            } else {
-                $this->componentsGrouped[ $libraryReference ][] = $component;
+    private function parsePin($node)
+    {
+        $pin = new Pin($node['record']);
+
+        /*foreach($node['children'] as $child) {
+            if($child['record']->getProperty('NAME') !== 'PinUniqueId') {
+
             }
-        }
+        }*/
+
+        return $pin;
+    }
+
+    private function parseComponentParameter($node)
+    {
+        return new \AltiumParser\Component\Parameter($node['record']);
     }
 }
