@@ -52,6 +52,9 @@ class BaseRecord
     const RECORD_IMPLEMENTATION_3 = 48;
     const RECORD_HYPERLINK = 226;
 
+    const UTF8_REPLACE_FROM = ["\xc2\xa0"];
+    const UTF8_REPLACE_TO = [' '];
+
     private static $records = [
         self::RECORD_HEADER              => Header::class,
         self::RECORD_COMPONENT           => Component::class,
@@ -108,7 +111,7 @@ class BaseRecord
             $properties = [];
             foreach ($matches as $match) {
                 if (!empty($match['Utf8Name'])) {
-                    $properties[ $match['Utf8Name'] ] = $match['Utf8Value'];
+                    $properties[ $match['Utf8Name'] ] = trim(str_replace(self::UTF8_REPLACE_FROM, self::UTF8_REPLACE_TO, $match['Utf8Value']));
                 } else if (!isset($properties[ $match['AsciiName'] ])) {
                     $properties[ $match['AsciiName'] ] = $match['AsciiValue'];
                 }
