@@ -14,9 +14,10 @@ class Component
 {
     public static function create(array $records)
     {
-        $component = new Component(null);
+        /** @var Component $component */
+        $component = null;
 
-        $getSubpart = function ($partId) use ($component) {
+        $getSubpart = function ($partId) use (&$component) {
             if (!isset($component->subparts[ $partId ])) {
                 $component->subparts[ $partId ] = new Subpart();
             }
@@ -29,7 +30,7 @@ class Component
 
             switch ($record->getProperty('RECORD')) {
                 case BaseRecord::RECORD_COMPONENT:
-                    $component->componentProperties = $record;
+                    $component = new Component($record);
                     break;
 
                 case BaseRecord::RECORD_PARAMETER:
@@ -88,7 +89,7 @@ class Component
 
     public function createSubpart($id)
     {
-        $this->subparts[$id] = new Subpart();
+        $this->subparts[ $id ] = new Subpart();
     }
 
     public function addParameter(Parameter $param)
