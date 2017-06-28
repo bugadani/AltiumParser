@@ -134,6 +134,8 @@ class SchDocParser extends LibraryParser
             } else if ($node['record'] instanceof PropertyRecords\Label) {
             } else if ($node['record'] instanceof PropertyRecords\SheetSymbol) {
             } else if ($node['record'] instanceof PropertyRecords\SheetEntry) {
+            } else if ($node['record'] instanceof PropertyRecords\Bus) {
+            } else if ($node['record'] instanceof PropertyRecords\BusEntry) {
             } else {
                 throw new \UnexpectedValueException("Unexpected record: {$node['record']->getProperty('RECORD')}");
             }
