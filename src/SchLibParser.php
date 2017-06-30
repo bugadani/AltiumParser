@@ -8,17 +8,16 @@ use AltiumParser\PropertyRecords\BaseRecord;
 class SchLibParser extends LibraryParser
 {
     const SCHLIB_HEADER = 'Protel for Windows - Schematic Library Editor Binary File Version 5.0';
-    const HEADER_FILE_NAME = 'FileHeader';
-
-    /**
-     * @var bool
-     */
-    private $fileParsed = false;
 
     /**
      * @var Component[]
      */
     private $components = [];
+
+    public function __construct($filename)
+    {
+        parent::__construct($filename, self::SCHLIB_HEADER);
+    }
 
     /**
      * @param $name
@@ -26,9 +25,7 @@ class SchLibParser extends LibraryParser
      */
     public function getComponent($name)
     {
-        if (!$this->fileParsed) {
-            $this->parseFile();
-        }
+        $this->ensureFileParsed();
 
         $nameLower = strtolower($name);
         if (!isset($this->components[ $nameLower ])) {
@@ -40,9 +37,7 @@ class SchLibParser extends LibraryParser
 
     public function listComponentNames()
     {
-        if (!$this->fileParsed) {
-            $this->parseFile();
-        }
+        $this->ensureFileParsed();
 
         return array_map(function (Component $component) {
             return $component->getLibraryReference();
@@ -51,37 +46,18 @@ class SchLibParser extends LibraryParser
 
     public function listComponents()
     {
-        if (!$this->fileParsed) {
-            $this->parseFile();
-        }
+        $this->ensureFileParsed();
 
         foreach ($this->components as $component) {
             yield $component;
         }
     }
 
-    private function parseFile()
+    protected function parse()
     {
-        $this->fileParsed = true;
+        $ole = $this->getOleFile();
 
-        $ole        = $this->getOleFile();
         $components = $ole->getRootDirectory()->listFiles();
-
-        if (!$ole->hasFile('' . self::HEADER_FILE_NAME . '')) {
-            throw new \UnexpectedValueException('File is not a valid schematic library');
-        }
-
-        $header  = $ole->getFile(self::HEADER_FILE_NAME)->getContents();
-        $records = RawRecord::getRecords($header);
-
-        if (empty($records)) {
-            throw new \UnexpectedValueException('File is not a valid schematic library');
-        }
-        $headerRecord = BaseRecord::parseRecord($records[0]);
-        if ($headerRecord->getProperty('HEADER') != self::SCHLIB_HEADER) {
-            throw new \UnexpectedValueException('File is not a valid schematic library');
-        }
-
         foreach ($components as $component) {
             if ($component == 'Storage' || $component == self::HEADER_FILE_NAME) {
                 continue;

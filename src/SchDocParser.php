@@ -9,12 +9,6 @@ use AltiumParser\Component\Pin;
 class SchDocParser extends LibraryParser
 {
     const SCHLIB_HEADER = 'Protel for Windows - Schematic Capture Binary File Version 5.0';
-    const HEADER_FILE_NAME = 'FileHeader';
-
-    /**
-     * @var bool
-     */
-    private $fileParsed = false;
 
     /**
      * @var Component[]
@@ -31,14 +25,17 @@ class SchDocParser extends LibraryParser
      */
     private $sheetProperties;
 
+    public function __construct($filename)
+    {
+        parent::__construct($filename, self::SCHLIB_HEADER);
+    }
+
     /**
      * @return Component[][]
      */
     public function listComponents()
     {
-        if (!$this->fileParsed) {
-            $this->parseFile();
-        }
+        $this->ensureFileParsed();
 
         return $this->componentsGrouped;
     }
@@ -48,34 +45,14 @@ class SchDocParser extends LibraryParser
      */
     public function listAllComponents()
     {
-        if (!$this->fileParsed) {
-            $this->parseFile();
-        }
+        $this->ensureFileParsed();
 
         return $this->components;
     }
 
-    private function parseFile()
+    protected function parse()
     {
-        $this->fileParsed = true;
-
-        $ole = $this->getOleFile();
-
-        if (!$ole->hasFile('' . self::HEADER_FILE_NAME . '')) {
-            throw new \UnexpectedValueException('File is not a valid schematic library');
-        }
-
-        $header  = $ole->getFile(self::HEADER_FILE_NAME)->getContents();
-        $records = RawRecord::getRecords($header);
-
-        if (empty($records)) {
-            throw new \UnexpectedValueException('File is not a valid schematic library');
-        }
-
-        $headerRecord = PropertyRecords\BaseRecord::parseRecord($records[0]);
-        if ($headerRecord->getProperty('HEADER') != self::SCHLIB_HEADER) {
-            throw new \UnexpectedValueException('File is not a valid schematic library');
-        }
+        $records = $this->getHeaderRecords();
 
         // Create a tree from the records
         $objects      = [];
@@ -144,9 +121,7 @@ class SchDocParser extends LibraryParser
 
     public function getComponentsByLibRef($libRef)
     {
-        if (!$this->fileParsed) {
-            $this->parseFile();
-        }
+        $this->ensureFileParsed();
 
         $libraryReference = strtolower($libRef);
 
