@@ -56,7 +56,7 @@ class ProjPcbParser
         }
     }
 
-    private function parse()
+    public function parse()
     {
         $ini                         = parse_ini_file($this->filename, true, INI_SCANNER_RAW);
         $this->design                = $ini['Design'];
