@@ -60,7 +60,21 @@ class ProjPcbParser
     public function __construct($filename)
     {
         $this->filename = $filename;
-        $this->path     = pathinfo($filename, PATHINFO_DIRNAME);
+        if (substr($filename, 0, 6) === 'zip://') {
+            if (strpos($filename, '#') === false) {
+                throw new \InvalidArgumentException('Discovering project files is not supported. Please provide a path to the project file.');
+            }
+            list($archive, $projectFile) = explode('#', $filename, 2);
+            $path = pathinfo($projectFile, PATHINFO_DIRNAME);
+            if ($path === '.') {
+                $path = '';
+            } else {
+                $path .= '/';
+            }
+            $this->path = $archive . '#' . $path;
+        } else {
+            $this->path = pathinfo($filename, PATHINFO_DIRNAME);
+        }
     }
 
     private function ensureFileParsed()
@@ -105,7 +119,7 @@ class ProjPcbParser
 
             switch ($ext) {
                 case 'SchDoc':
-                    $this->schematicDocuments[] = new SchDocParser($this->path . '/' . $document['DocumentPath']);
+                    $this->schematicDocuments[] = new SchDocParser($this->path . $document['DocumentPath']);
                     break;
 
                 case 'PcbDoc':
