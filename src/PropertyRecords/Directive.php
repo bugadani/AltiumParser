@@ -2,7 +2,7 @@
 
 namespace AltiumParser\PropertyRecords;
 
-class WarningSign extends BaseRecord
+class Directive extends BaseRecord
 {
 
 }

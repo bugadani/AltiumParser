@@ -2,6 +2,8 @@
 
 namespace AltiumParser;
 
+use AltiumParser\Variations\AlternativeComponentVariation;
+use AltiumParser\Variations\NotFittedComponentVariation;
 use AltiumParser\Variations\ProjectVariation;
 
 class ProjPcbParser
@@ -22,11 +24,23 @@ class ProjPcbParser
      * @var bool
      */
     private $fileParsed = false;
+    private $path;
+    private $filename;
 
     private $design = [];
-    private $documents = [];
+
+    /**
+     * @var SchDocParser[]
+     */
+    private $schematicDocuments = [];
+    private $pcbDocuments = [];
+    private $otherDocuments = [];
     private $generatedDocuments = [];
     private $configurations = [];
+
+    /**
+     * @var ProjectVariation[]
+     */
     private $projectVariants = [];
     private $outputGroups = [];
     private $erc = [];
@@ -46,6 +60,7 @@ class ProjPcbParser
     public function __construct($filename)
     {
         $this->filename = $filename;
+        $this->path     = pathinfo($filename, PATHINFO_DIRNAME);
     }
 
     private function ensureFileParsed()
@@ -85,7 +100,22 @@ class ProjPcbParser
         unset($ini['Preferences']);
 
         for ($i = 1; isset($ini["Document{$i}"]); $i++) {
-            $this->documents[] = $ini["Document{$i}"];
+            $document = $ini["Document{$i}"];
+            $ext      = pathinfo($document['DocumentPath'], PATHINFO_EXTENSION);
+
+            switch ($ext) {
+                case 'SchDoc':
+                    $this->schematicDocuments[] = new SchDocParser($this->path . '/' . $document['DocumentPath']);
+                    break;
+
+                case 'PcbDoc':
+                    $this->pcbDocuments[] = $document;
+                    break;
+
+                default:
+                    $this->otherDocuments[] = $document;
+                    break;
+            }
             unset($ini["Document{$i}"]);
         }
 
@@ -104,13 +134,77 @@ class ProjPcbParser
             unset($ini["OutputGroup{$i}"]);
         }
 
+        $this->projectVariants['[No Variations]'] = new ProjectVariation(['VariationCount' => 0, 'Description' => '[No Variations]']);
         for ($i = 1; isset($ini["ProjectVariant{$i}"]); $i++) {
-            $this->projectVariants[] = new ProjectVariation($ini["ProjectVariant{$i}"]);
+            $projectVariation                                             = new ProjectVariation($ini["ProjectVariant{$i}"]);
+            $this->projectVariants[ $projectVariation->getDescription() ] = $projectVariation;
             unset($ini["ProjectVariant{$i}"]);
         }
 
         if (!empty($ini)) {
             throw new \Exception('Debug: missed ini keys: ' . implode(', ', array_keys($ini)));
         }
+    }
+
+    /**
+     * @param string $variant
+     *
+     * @return array Libref -> [unique id] array
+     */
+    public function getProjectBOM($variant = '[No Variations]')
+    {
+        $this->ensureFileParsed();
+
+        if (!isset($this->projectVariants[ $variant ])) {
+            throw new \InvalidArgumentException("Variation {$variant} does not exist");
+        }
+
+        $components = [];
+        foreach ($this->schematicDocuments as $schDoc) {
+            $c = $schDoc->listComponents();
+
+            $components = array_merge_recursive($components, $c);
+        }
+
+        $idsToRemove = [];
+        $idsToAdd    = [];
+
+        foreach ($this->projectVariants[ $variant ]->getVariations() as $variation) {
+            if ($variation instanceof NotFittedComponentVariation) {
+                $idsToRemove[] = $variation->getUniqueId();
+            } else if ($variation instanceof AlternativeComponentVariation) {
+                $libraryReference = $variation->getParameters()['Library Reference'];
+                if (!isset($idsToAdd[ $libraryReference ])) {
+                    $idsToAdd[ $libraryReference ] = [];
+                }
+                $uniqueId = $variation->getUniqueId();
+
+                $pos = strrpos($uniqueId, '\\');
+                if ($pos !== false) {
+                    $uniqueId = substr($uniqueId, $pos + 1);
+                }
+
+                $idsToRemove[]                   = $uniqueId;
+                $idsToAdd[ $libraryReference ][] = $uniqueId;
+            }
+        }
+
+        foreach ($components as $libref => $ids) {
+            $components[ $libref ] = array_diff($ids, $idsToRemove);
+            if (empty($components[ $libref ])) {
+                unset($components[ $libref ]);
+            }
+        }
+
+        $components = array_merge_recursive($components, $idsToAdd);
+
+        return $components;
+    }
+
+    public function listVariations()
+    {
+        $this->ensureFileParsed();
+
+        return array_keys($this->projectVariants);
     }
 }

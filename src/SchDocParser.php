@@ -16,7 +16,7 @@ class SchDocParser extends LibraryParser
     private $components = [];
 
     /**
-     * @var Component[][]
+     * @var string[][]
      */
     private $componentsGrouped = [];
 
@@ -25,13 +25,18 @@ class SchDocParser extends LibraryParser
      */
     private $sheetProperties;
 
+    /**
+     * @var PropertyRecords\SheetSymbol[]
+     */
+    private $sheetSymbols = [];
+
     public function __construct($filename)
     {
         parent::__construct($filename, self::SCHLIB_HEADER);
     }
 
     /**
-     * @return Component[][]
+     * @return string[][]
      */
     public function listComponents()
     {
@@ -43,11 +48,26 @@ class SchDocParser extends LibraryParser
     /**
      * @return Component[]
      */
-    public function listAllComponents()
+    public function getComponentInfoList()
     {
         $this->ensureFileParsed();
 
         return $this->components;
+    }
+
+    /**
+     * @param string $uniqueId
+     * @return Component
+     */
+    public function getComponentInfo($uniqueId)
+    {
+        $this->ensureFileParsed();
+
+        if (isset($this->components[ $uniqueId ])) {
+            return $this->components[$uniqueId];
+        }
+
+        throw new \InvalidArgumentException("{$uniqueId} not found");
     }
 
     protected function parse()
@@ -95,12 +115,11 @@ class SchDocParser extends LibraryParser
                 $component          = $this->parseComponent($node);
                 $this->components[] = $component;
 
-                $libraryReference = strtolower($component->getLibraryReference());
+                $libraryReference = $component->getLibraryReference();
                 if (!isset($this->componentsGrouped[ $libraryReference ])) {
-                    $this->componentsGrouped[ $libraryReference ] = [$component];
-                } else {
-                    $this->componentsGrouped[ $libraryReference ][] = $component;
+                    $this->componentsGrouped[ $libraryReference ] = [];
                 }
+                $this->componentsGrouped[ $libraryReference ][] = $component->getUniqueId();
             } else if ($node['record'] instanceof PropertyRecords\Wire) {
             } else if ($node['record'] instanceof PropertyRecords\Junction) {
             } else if ($node['record'] instanceof PropertyRecords\NetLabel) {
@@ -110,9 +129,21 @@ class SchDocParser extends LibraryParser
             } else if ($node['record'] instanceof PropertyRecords\NoERC) {
             } else if ($node['record'] instanceof PropertyRecords\Label) {
             } else if ($node['record'] instanceof PropertyRecords\SheetSymbol) {
+                $this->sheetSymbols[] = $node['record'];
             } else if ($node['record'] instanceof PropertyRecords\SheetEntry) {
             } else if ($node['record'] instanceof PropertyRecords\Bus) {
             } else if ($node['record'] instanceof PropertyRecords\BusEntry) {
+            } else if ($node['record'] instanceof PropertyRecords\Directive) {
+            } else if ($node['record'] instanceof PropertyRecords\Ellipse) {
+            } else if ($node['record'] instanceof PropertyRecords\Rectangle) {
+            } else if ($node['record'] instanceof PropertyRecords\Polyline) {
+            } else if ($node['record'] instanceof PropertyRecords\Polygon) {
+            } else if ($node['record'] instanceof PropertyRecords\Line) {
+            } else if ($node['record'] instanceof PropertyRecords\Arc) {
+            } else if ($node['record'] instanceof PropertyRecords\EllipticalArc) {
+            } else if ($node['record'] instanceof PropertyRecords\RoundRectangle) {
+            } else if ($node['record'] instanceof PropertyRecords\Piechart) {
+            } else if ($node['record'] instanceof PropertyRecords\Bezier) {
             } else {
                 throw new \UnexpectedValueException("Unexpected record: {$node['record']->getProperty('RECORD')}");
             }
@@ -173,5 +204,25 @@ class SchDocParser extends LibraryParser
     private function parseComponentParameter($node)
     {
         return new Parameter($node['record']);
+    }
+
+    /**
+     * @return PropertyRecords\Sheet
+     */
+    public function getSheetProperties()
+    {
+        $this->ensureFileParsed();
+
+        return $this->sheetProperties;
+    }
+
+    /**
+     * @return PropertyRecords\SheetSymbol[]
+     */
+    public function getSheetSymbols()
+    {
+        $this->ensureFileParsed();
+
+        return $this->sheetSymbols;
     }
 }

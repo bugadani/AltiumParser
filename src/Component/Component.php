@@ -87,6 +87,11 @@ class Component
         $this->componentProperties = $properties;
     }
 
+    public function getUniqueId()
+    {
+        return $this->componentProperties->getProperty('UNIQUEID');
+    }
+
     public function createSubpart($id)
     {
         $this->subparts[ $id ] = new Subpart();

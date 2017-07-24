@@ -89,7 +89,7 @@ class BaseRecord
         self::RECORD_BUS_ENTRY           => BusEntry::class,
         self::RECORD_TEMPLATE            => Template::class,
         self::RECORD_PARAMETER           => Parameter::class,
-        self::RECORD_WARNING_SIGN        => WarningSign::class,
+        self::RECORD_WARNING_SIGN        => Directive::class,
         self::RECORD_IMPLEMENTATION_LIST => ImplementationList::class,
         self::RECORD_IMPLEMENTATION      => Implementation::class,
         self::RECORD_IMPLEMENTATION_1    => Implementation1::class,

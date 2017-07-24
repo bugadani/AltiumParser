@@ -6,11 +6,16 @@ use AltiumParser\ProjPcbParser;
 
 class ProjectVariation
 {
+    /**
+     * @var ComponentVariation[]
+     */
     private $variations = [];
+    private $description;
 
     public function __construct(array $raw)
     {
-        for ($i = 1; $i < $raw['VariationCount']; $i++) {
+        $this->description = $raw['Description'];
+        for ($i = 1; $i <= $raw['VariationCount']; $i++) {
             if (!isset($raw["Variation{$i}"])) {
                 throw new \UnexpectedValueException("Project file seems corrupted. No data for 'Variation{$i}'");
             }
@@ -41,5 +46,18 @@ class ProjectVariation
                     break;
             }
         }
+    }
+
+    public function getDescription()
+    {
+        return $this->description;
+    }
+
+    /**
+     * @return ComponentVariation[]
+     */
+    public function getVariations()
+    {
+        return $this->variations;
     }
 }
