@@ -132,6 +132,11 @@ class Component
         throw new \InvalidArgumentException("Part '{$id}' not found");
     }
 
+    public function getLibraryPath()
+    {
+        return $this->componentProperties->getProperty('SOURCELIBRARYNAME');
+    }
+
     public function getLibraryReference()
     {
         return $this->componentProperties->getProperty('LIBREFERENCE');

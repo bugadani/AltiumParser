@@ -187,7 +187,7 @@ class ProjPcbParser
             if ($variation instanceof NotFittedComponentVariation) {
                 $idsToRemove[] = $variation->getUniqueId();
             } else if ($variation instanceof AlternativeComponentVariation) {
-                $libraryReference = $variation->getParameters()['Library Reference'];
+                $libraryReference = $variation->getParameters()['AltLibLink_LibraryIdentifier'] . '|' . $variation->getParameters()['Library Reference'];
                 if (!isset($idsToAdd[ $libraryReference ])) {
                     $idsToAdd[ $libraryReference ] = [];
                 }

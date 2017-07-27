@@ -115,7 +115,7 @@ class SchDocParser extends LibraryParser
                 $component          = $this->parseComponent($node);
                 $this->components[] = $component;
 
-                $libraryReference = $component->getLibraryReference();
+                $libraryReference = $component->getLibraryPath() . '|' . $component->getLibraryReference();
                 if (!isset($this->componentsGrouped[ $libraryReference ])) {
                     $this->componentsGrouped[ $libraryReference ] = [];
                 }
