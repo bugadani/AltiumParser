@@ -5,6 +5,7 @@ namespace AltiumParser;
 use AltiumParser\Component\Component;
 use AltiumParser\Component\Parameter;
 use AltiumParser\Component\Pin;
+use AltiumParser\PropertyRecords\ImplementationList;
 
 class SchDocParser extends LibraryParser
 {
@@ -73,7 +74,7 @@ class SchDocParser extends LibraryParser
     public function getComponentInfo($uniqueId)
     {
         if ($this->hasComponent($uniqueId)) {
-            return $this->components[$uniqueId];
+            return $this->components[ $uniqueId ];
         }
 
         throw new \InvalidArgumentException("{$uniqueId} not found");
@@ -121,8 +122,8 @@ class SchDocParser extends LibraryParser
             if ($node['record'] instanceof PropertyRecords\Sheet) {
                 $this->sheetProperties = $node['record'];
             } else if ($node['record'] instanceof PropertyRecords\Component) {
-                $component          = $this->parseComponent($node);
-                $this->components[$component->getUniqueId()] = $component;
+                $component                                     = $this->parseComponent($node);
+                $this->components[ $component->getUniqueId() ] = $component;
 
                 $libraryReference = $component->getLibraryPath() . '|' . $component->getLibraryReference();
                 if (!isset($this->componentsGrouped[ $libraryReference ])) {
@@ -191,6 +192,14 @@ class SchDocParser extends LibraryParser
             } else if ($child['record'] instanceof PropertyRecords\Parameter) {
                 $param = $this->parseComponentParameter($child);
                 $component->addParameter($param);
+            } else if ($child['record'] instanceof ImplementationList) {
+                foreach ($child['children'] as $implementation) {
+                    switch ($implementation['record']->getProperty('MODELTYPE')) {
+                        case 'PCBLIB':
+                            $component->addFootprint($implementation['record']);
+                            break;
+                    }
+                }
             }
         }
 

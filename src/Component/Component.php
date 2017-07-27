@@ -3,6 +3,7 @@
 namespace AltiumParser\Component;
 
 use AltiumParser\PropertyRecords\BaseRecord;
+use AltiumParser\PropertyRecords\Implementation;
 use AltiumParser\RawRecord;
 
 /**
@@ -12,6 +13,7 @@ use AltiumParser\RawRecord;
  */
 class Component
 {
+
     public static function create(array $records)
     {
         /** @var Component $component */
@@ -102,6 +104,16 @@ class Component
      */
     private $subparts = [];
 
+    /**
+     * @var Implementation[]
+     */
+    private $footprints = [];
+
+    /**
+     * @var Implementation
+     */
+    private $currentFootprint;
+
     public function __construct(\AltiumParser\PropertyRecords\Component $properties)
     {
         $this->componentProperties = $properties;
@@ -165,5 +177,19 @@ class Component
     public function getIndexInSheet()
     {
         return $this->componentProperties->getProperty('INDEXINSHEET', -1);
+    }
+
+    public function addFootprint(Implementation $footprint)
+    {
+        $this->footprints[] = $footprint;
+        if (count($this->footprints) === 1 || $footprint->getBoolean('ISCURRENT')) {
+            $this->currentFootprint = $footprint;
+        }
+    }
+
+    public function getCurrentFootprint()
+    {
+        var_dump($this->footprints);
+        return $this->currentFootprint;
     }
 }
