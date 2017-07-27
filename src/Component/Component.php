@@ -134,9 +134,18 @@ class Component
         $this->parameters[ $param->getName() ] = $param;
     }
 
+    /**
+     * @param $parameterName
+     * @return bool
+     */
+    public function hasParameter($parameterName)
+    {
+        return isset($this->parameters[ $parameterName ]);
+    }
+
     public function getParameter($parameterName)
     {
-        if (!isset($this->parameters[ $parameterName ])) {
+        if (!$this->hasParameter($parameterName)) {
             throw new \InvalidArgumentException("Unknown parameter: {$parameterName}");
         }
 
