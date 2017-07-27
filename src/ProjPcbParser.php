@@ -215,6 +215,30 @@ class ProjPcbParser
         return $components;
     }
 
+    public function getComponentInfo($uniqueId, $variant = '[No Variations]')
+    {
+        $this->ensureFileParsed();
+
+        if (!isset($this->projectVariants[ $variant ])) {
+            throw new \InvalidArgumentException("Variation {$variant} does not exist");
+        }
+
+        /** @var SchDocParser $schDoc */
+        foreach ($this->schematicDocuments as $schDoc) {
+            if ($schDoc->hasComponent($uniqueId)) {
+                $component  = $schDoc->getComponentInfo($uniqueId);
+                $variations = $this->projectVariants[ $variant ]->getVariations();
+                if (isset($variations[ $uniqueId ])) {
+                    return $variations[ $uniqueId ]->apply($component);
+                } else {
+                    return $component;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public function listVariations()
     {
         $this->ensureFileParsed();

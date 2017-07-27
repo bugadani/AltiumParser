@@ -56,14 +56,23 @@ class SchDocParser extends LibraryParser
     }
 
     /**
+     * @param $uniqueId
+     * @return bool
+     */
+    public function hasComponent($uniqueId)
+    {
+        $this->ensureFileParsed();
+
+        return isset($this->components[ $uniqueId ]);
+    }
+
+    /**
      * @param string $uniqueId
      * @return Component
      */
     public function getComponentInfo($uniqueId)
     {
-        $this->ensureFileParsed();
-
-        if (isset($this->components[ $uniqueId ])) {
+        if ($this->hasComponent($uniqueId)) {
             return $this->components[$uniqueId];
         }
 
@@ -113,7 +122,7 @@ class SchDocParser extends LibraryParser
                 $this->sheetProperties = $node['record'];
             } else if ($node['record'] instanceof PropertyRecords\Component) {
                 $component          = $this->parseComponent($node);
-                $this->components[] = $component;
+                $this->components[$component->getUniqueId()] = $component;
 
                 $libraryReference = $component->getLibraryPath() . '|' . $component->getLibraryReference();
                 if (!isset($this->componentsGrouped[ $libraryReference ])) {

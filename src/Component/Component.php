@@ -67,6 +67,26 @@ class Component
         return $component;
     }
 
+    public static function createFromArray(array $data)
+    {
+        if (!isset($data['component'])) {
+            throw new \InvalidArgumentException('Component data is not set');
+        }
+        if (!isset($data['parameters'])) {
+            $data['parameters'] = [];
+        }
+        if (!isset($data['drawing'])) {
+            $data['drawing'] = [];
+        }
+
+        $component = new Component(new \AltiumParser\PropertyRecords\Component($data['component']));
+        foreach ($data['parameters'] as $parameter) {
+            $component->addParameter(new Parameter(new \AltiumParser\PropertyRecords\Parameter($parameter)));
+        }
+
+        return $component;
+    }
+
     /**
      * @var \AltiumParser\PropertyRecords\Component
      */

@@ -2,17 +2,24 @@
 
 namespace AltiumParser\Variations;
 
+use AltiumParser\Component\Component;
+
 abstract class ComponentVariation
 {
     private $designator;
     private $uniqueId;
-    protected $parameters;
+    private $variationInfo;
 
     public function __construct(array $variation)
     {
         $this->designator = $variation['Designator'];
-        $this->uniqueId   = $variation['UniqueId'];
-        $this->parameters = $variation;
+        $uniqueId         = $variation['UniqueId'];
+        $pos = strrpos($uniqueId, '\\');
+        if ($pos !== false) {
+            $uniqueId = substr($uniqueId, $pos + 1);
+        }
+        $this->uniqueId   = $uniqueId;
+        $this->variationInfo = $variation;
     }
 
     /**
@@ -34,8 +41,10 @@ abstract class ComponentVariation
     /**
      * @return array
      */
-    public function getParameters()
+    public function getInfo()
     {
-        return $this->parameters;
+        return $this->variationInfo;
     }
+
+    public abstract function apply(Component $component);
 }

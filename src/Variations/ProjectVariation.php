@@ -2,6 +2,7 @@
 
 namespace AltiumParser\Variations;
 
+use AltiumParser\Component\Component;
 use AltiumParser\ProjPcbParser;
 
 class ProjectVariation
@@ -23,7 +24,8 @@ class ProjectVariation
 
             switch ($variation['Kind']) {
                 case 1:
-                    $this->variations[] = new NotFittedComponentVariation($variation);
+                    $variationObject                                     = new NotFittedComponentVariation($variation);
+                    $this->variations[ $variationObject->getUniqueId() ] = $variationObject;
                     break;
 
                 case 2:
@@ -38,7 +40,8 @@ class ProjectVariation
                         }
                     }
 
-                    $this->variations[] = new AlternativeComponentVariation($variation, $parameters);
+                    $variationObject                                     = new AlternativeComponentVariation($variation, $parameters);
+                    $this->variations[ $variationObject->getUniqueId() ] = $variationObject;
                     break;
 
                 default:

@@ -2,11 +2,37 @@
 
 namespace AltiumParser\Variations;
 
+use AltiumParser\Component\Component;
+use AltiumParser\Component\Parameter;
+
 class AlternativeComponentVariation extends ComponentVariation
 {
+    private $parameters = [];
+
     public function __construct(array $variation, array $parameters)
     {
         parent::__construct($variation);
-        $this->parameters = array_merge($this->parameters, $parameters);
+        foreach ($parameters as $parameter => $value) {
+            $this->parameters[] = [
+                'RECORD'      => 41,
+                'NAME'        => $parameter,
+                'TEXT'        => $value,
+                'DESCRIPTION' => $value
+            ];
+        }
+    }
+
+    public function apply(Component $component)
+    {
+        return Component::createFromArray([
+            'component'  => [
+                'RECORD'            => 1,
+                'UNIQUEID'          => $component->getUniqueId(),
+                'SOURCELIBRARYNAME' => $this->getInfo()['AltLibLink_LibraryIdentifier'],
+                'LIBREFERENCE'      => $this->getInfo()['AlternatePart'],
+                'DESIGNATOR'        => $this->getInfo()['Designator']
+            ],
+            'parameters' => $this->parameters
+        ]);
     }
 }
