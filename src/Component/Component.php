@@ -198,7 +198,6 @@ class Component
 
     public function getCurrentFootprint()
     {
-        var_dump($this->footprints);
         return $this->currentFootprint;
     }
 }
