@@ -63,6 +63,13 @@ class Component
 
                     $getSubpart($partId)->addDrawingPrimitive(new DrawingPrimitive($record));
                     break;
+
+                case BaseRecord::RECORD_IMPLEMENTATION:
+                    /** @var Implementation $record */
+                    if ($record->getProperty('MODELTYPE') === 'PCBLIB') {
+                        $component->addFootprint($record);
+                    }
+                    break;
             }
         }
 
