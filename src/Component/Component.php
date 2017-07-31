@@ -152,6 +152,19 @@ class Component
         return $this->parameters[ $parameterName ];
     }
 
+    public function getParameterValue($parameterName, $default = null)
+    {
+        if (!$this->hasParameter($parameterName)) {
+            if ($default === null) {
+                throw new \InvalidArgumentException("Unknown parameter: {$parameterName}");
+            }
+
+            return $default;
+        }
+
+        return $this->parameters[ $parameterName ]->getText();
+    }
+
     public function listParameters()
     {
         foreach ($this->parameters as $parameter) {
