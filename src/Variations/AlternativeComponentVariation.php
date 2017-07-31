@@ -8,11 +8,13 @@ use AltiumParser\Component\Parameter;
 class AlternativeComponentVariation extends ComponentVariation
 {
     private $parameters = [];
+    private $parameterMap = [];
 
     public function __construct(array $variation, array $parameters)
     {
         parent::__construct($variation);
         foreach ($parameters as $parameter => $value) {
+            $this->parameterMap[$parameter] = $value;
             $this->parameters[] = [
                 'RECORD'      => 41,
                 'NAME'        => $parameter,
@@ -34,5 +36,13 @@ class AlternativeComponentVariation extends ComponentVariation
             ],
             'parameters' => $this->parameters
         ]);
+    }
+
+    /**
+     * @return array
+     */
+    public function getParameters()
+    {
+        return $this->parameterMap;
     }
 }
